@@ -74,9 +74,9 @@ class Register extends Command {
 		}
 
 		$deployOptions = [];
-		$envs = $input->getOption('env');
+		$envs = $input->getOption('env') ?? [];
 		// Parse array of deploy options strings (ENV_NAME=ENV_VALUE) to array key => value
-		$deployOptions = array_reduce($envs, function ($carry, $item) {
+		$envs = array_reduce($envs, function ($carry, $item) {
 			$parts = explode('=', $item, 2);
 			if (count($parts) === 2) {
 				$carry[$parts[0]] = $parts[1];
@@ -85,7 +85,7 @@ class Register extends Command {
 		}, []);
 		$deployOptions['environment_variables'] = $envs;
 
-		$mounts = $input->getOption('mount');
+		$mounts = $input->getOption('mount') ?? [];
 		// Parse array of mount options strings (HOST_PATH:CONTAINER_PATH:ro|rw)
 		// to array of arrays ['source' => HOST_PATH, 'target' => CONTAINER_PATH, 'mode' => ro|rw]
 		$mounts = array_map(function ($item) {
@@ -97,7 +97,7 @@ class Register extends Command {
 		}, $mounts);
 		$deployOptions['mounts'] = $mounts;
 
-		$ports = $input->getOption('port');
+		$ports = $input->getOption('port') ?? [];
 		// Parse array of port options strings (HOST_PORT;OPTIONAL_HOST_IP;CONTAINER_PORT)
 		// to array of arrays ['HostPort' => HOST_PORT, 'HostIp' => OPTIONAL_HOST_IP, 'ContainerPort' => CONTAINER_PORT]
 		// It could be two (without optional) or three parts separated by semicolon
@@ -117,7 +117,6 @@ class Register extends Command {
 			$appId, $input->getOption('info-xml'), $input->getOption('json-info'),
 			$deployOptions
 		);
-		return 1; // TODO: Remove this line
 		if (isset($appInfo['error'])) {
 			$this->logger->error($appInfo['error']);
 			if ($outputConsole) {
@@ -179,7 +178,6 @@ class Register extends Command {
 		$auth = [];
 		if ($daemonConfig->getAcceptsDeployId() === $this->dockerActions->getAcceptsDeployId()) {
 			$deployParams = $this->dockerActions->buildDeployParams($daemonConfig, $appInfo);
-			return 1; // TODO: remove this line
 			$deployResult = $this->dockerActions->deployExApp($exApp, $daemonConfig, $deployParams);
 			if ($deployResult) {
 				$this->logger->error(sprintf('ExApp %s deployment failed. Error: %s', $appId, $deployResult));
